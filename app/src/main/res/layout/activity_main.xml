@@ -25,6 +25,7 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
 
+    //testtte
     <ProgressBar
         style="?android:attr/progressBarStyleSmall"
         android:layout_width="wrap_content"
@@ -33,4 +34,14 @@
         android:layout_above="@+id/editText"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="116dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textEmailAddress"
+        android:ems="10"
+        android:id="@+id/editText2"
+        android:layout_alignTop="@+id/progressBar"
+        android:layout_alignLeft="@+id/editText"
+        android:layout_alignStart="@+id/editText" />
 </RelativeLayout>
