@@ -36,7 +36,7 @@ public class SpriteAnimation extends GraphicObject {
 
     @Override
     public void Draw(Canvas canvas) {
-        Rect dest = new Rect(m_x, m_y, m_x + mSpriteWidth, m_y + mSpriteHeight);
+        Rect dest = new Rect((int)m_x, (int)m_y, (int) m_x + mSpriteWidth, (int) m_y + mSpriteHeight);
         canvas.drawBitmap(m_bitmap, mSRectangle, dest, null);
     }
 

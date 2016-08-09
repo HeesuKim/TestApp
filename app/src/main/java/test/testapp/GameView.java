@@ -1,44 +1,29 @@
 package test.testapp;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.os.SystemClock;
-import android.util.DisplayMetrics;
-import android.view.Display;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.Chronometer;
 
 import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Vector;
 
 /**
  * Created by Administrator on 2016-08-03.
  */
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameViewThread m_thread;
-   // private IState m_state;
-    private GraphicObject m_Image, n_Image, n_Image2;
-    private SpriteAnimation m_spr;
+    private Vector gObject = new Vector();
+    private GraphicObject GO, BG;
 
     private int stFlag = 0;
-    private int stPos = 0;
+    private int stPos = 1;
 
     private double tWidth, tHeight;
-
-    private long curTime = 0;
-    private String timeText;
-
-    TimerTask tT;
-    Timer mT;
+    private String timeText = "5.00";
 
     public GameView(Context context, int width, int height) {
         super(context);
@@ -49,102 +34,109 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         tWidth = width;
         tHeight = height;
 
+        System.out.println("@@@@tWidth = " + tWidth + " // tHeight = " + tHeight);
+
         m_thread = new GameViewThread(getHolder(),this);
-        m_Image = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.ba));
-        n_Image = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.ea));
-        n_Image2 = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.ea));
 
-        m_Image.SetPosition((int) (tWidth * 1/6), (int) (tHeight * 1/4));
-        n_Image.SetPosition((int) (tWidth * 3/6), (int) (tHeight * 1/4));
-        n_Image.SetAnspos(0);
-        n_Image2.SetPosition((int) (tWidth * 3/6), (int) (tHeight * 3/4));
-        n_Image2.SetAnspos(1);
+        gObject.setSize(10);
+        //BG
+        BG = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.bgg3),
+                0, 0, 11, 8);
+        BG.SetPosition((int) (-BG.getG_wid() + tWidth), ((int)(tHeight - BG.getG_hei()))/2);
 
+        //System.out.println("@@@@idth = " + BG.getG_wid() + " // tHeight = " + BG.getG_hei());
+        //System.out.println("$$r3r23$$$$tWidth = " + BG.getG_wid() + " // tHeight = " + BG.getG_hei());
+        //BALL
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.ba),
+                (int) (tWidth * 1/6), (int) (tHeight * 1/4), 11, 7);
+        gObject.add(0, GO);
+        //EARTH
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
+                (int) (tWidth * 3/6), (int) (tHeight * 1/4), 3, 1);
+        gObject.add(1, GO);
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
+                (int) (tWidth * 3/6), (int) (tHeight * 3/4), 7, 2);
+        gObject.add(2, GO);
 
     }
-
-    int timeFlag = 1;
-   /* public void timeCounter(int flag) {
-        if (flag == 1) {
-            tT = new TimerTask() {
-                @Override
-                public void run() {
-                    timeText = String.format("%01d.%03d", curTime/1000, curTime%1000);
-                }
-            };
-            curTime++;
-            System.out.println("curTime @@!@ -> " + curTime);
-            mT = new Timer();
-            mT.schedule(tT, 1000, 1000);
-            timeFlag = 2;
-        } else if (flag == 3){
-            System.out.println("cancel -> " + curTime);
-            mT.cancel();
-        } else if (flag == 2) {
-
-        }
-
-    }*/
 
     public boolean correctAns(int cAns, int posNum) {
-        if (posNum == n_Image.GetP()) {
-            //ystem.out.println("!@#@#@#@posNum : " + posNum);
-            return (cAns == n_Image.GetK());
+        System.out.println("cAns , posNum -> " + cAns + ", " + posNum);
+        if (posNum == ((GraphicObject) gObject.elementAt(1)).getPos()) {
+            return (cAns == ((GraphicObject) gObject.elementAt(1)).getAns());
         } else {
-            //System.out.println("!@#@#@#@posNum2 : " + posNum);
-            return (cAns == n_Image2.GetK());
+            return (cAns == ((GraphicObject) gObject.elementAt(2)).getAns());
         }
 
     }
 
-    long baseTime = 0;
+    private int tEndFlag = 0;
+    private Timer inTimer;
+    private reTimer mtim;
+
     int answer = 3;
+
+
+    int tCounter = 0;
+    long tTimer;
     @Override
     public void onDraw(Canvas canvas) {
-        /*Bitmap _scratch = BitmapFactory.decodeResource(getResources(),
-                R.mipmap.ic_launcher);*/
-        //Bitmap _scratch = AppManager.getInstance().getBitmap(R.mipmap.ic_launcher);
         canvas.drawColor(Color.BLACK);
-       // canvas.drawBitmap(_scratch, 50, 50, null);
-        //m_state.Render(canvas);
+        GraphicObject vObj;
         if (stFlag == 1) {
-           // System.out.println("START : " + timeFlag);
-            if (timeFlag == 1) {
-                baseTime = System.currentTimeMillis();
-                timeFlag = 2;
-               // System.out.println("this : " + timeFlag);
-            } else {
-                curTime = System.currentTimeMillis() - baseTime;
-                //System.out.println("&^&^&CurTime - > " + curTime);
+            if(tCounter == 0) {
+                tTimer = System.currentTimeMillis();
             }
-            if ((timeFlag) == 2 && (curTime >= 5000)) {
-                if (correctAns(answer, stPos)) {
-                    if (stPos == n_Image.GetP()) {
-                        n_Image2.SetPosition(-1, -1);
+            tCounter++;
+            System.out.println("tCounter val = " + tCounter);
+            if(tCounter == 60) {
+                long dTimer = System.currentTimeMillis() - tTimer;
+                System.out.println("출력값 : " + dTimer);
+            }
+
+            BG.Draw(canvas);
+            for (int i = 0; i < 7; i++) {
+                vObj = (GraphicObject) gObject.elementAt(i);
+                if (vObj != null){
+                    vObj.Draw(canvas);
+                }
+            }
+
+            if (tEndFlag == 0) {
+                tEndFlag = 1;
+                inTimer = new Timer();
+                mtim = new reTimer();
+                inTimer.schedule(mtim, 0, 10);
+            }
+            if (tEndFlag == 1) {
+                if (mtim.getTime() <= 0) {
+                    inTimer.cancel();
+                    timeText = "5.00";
+                    tEndFlag = 0;
+                    if (correctAns(answer, stPos)) {
+                        System.out.println("COR!!");
+                        if (stPos == ((GraphicObject) gObject.elementAt(1)).getPos()) {
+                            gObject.remove(2);
+                        } else {
+                            gObject.remove(1);
+                        }
                     } else {
-                        n_Image.SetPosition(-1, -1);
+                        System.out.println("WORRRR!!");
+                        gObject.remove(1);
+                        gObject.remove(1);
                     }
                 } else {
-                    n_Image2.SetPosition(-1, -1);
-                    n_Image.SetPosition(-1, -1);
+                    timeText = String.format("%01d.%02d", mtim.getTime()/1000,
+                            (mtim.getTime()%1000)/10);
                 }
-                curTime = 0;
-                timeFlag = 1;
-                //System.out.println("TIMEFLAG : " + timeFlag);
             }
-            m_Image.Draw(canvas);
-            n_Image.Draw(canvas);
-            n_Image2.Draw(canvas);
-            if (timeFlag == 2) {
-                timeText = String.format("%01d.%03d", curTime/1000, curTime%1000);
 
-                Paint p = new Paint();
-                p.setTextSize(50);
-                p.setColor(Color.WHITE);
-                canvas.drawText("남은 선택 시간 : " + String.valueOf(timeText) + "초", (int) (tWidth * 1/10), (int) (tHeight * 1/8), p);
-            }
+            Paint p = new Paint();
+            p.setTextSize(50);
+            p.setColor(Color.BLACK);
+            canvas.drawText("남은 선택 시간 : " + timeText + "초",
+                    (int) (tWidth * 1/10), (int) (tHeight * 1/8), p);
         }
-        //m_spr.Draw(canvas);
     }
 
     @Override
@@ -171,19 +163,24 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void Update() {
-        n_Image.SetAns(3);
-        n_Image2.SetAns(7);
-       /* if (stFlag != 0) {
-            if (m_Image.GetX() >= tWidth) {
-                m_Image.SetPosition((int) (tWidth * 1/6), (int) (tHeight * 1/4));
-            } else {
-                m_Image.SetPosition(m_Image.GetX() + 3, m_Image.GetY());
-            }
-        }*/
+        if (BG.getX() >= 0) {
+            BG.SetPosition(0, BG.getY());
+        } else {
+            BG.SetPosition(BG.getX() + (float)(BG.getG_wid() * 0.0001), BG.getY());
+        }
 
-        //System.out.println("Pos : " + m_Image.GetX());
-        /*long GameTime = System.currentTimeMillis();
-        m_spr.Update(GameTime);*/
+        if(stFlag == 1 && tEndFlag == 1){
+            if (mtim.getTime() >= 0) {
+                ((GraphicObject) gObject.elementAt(1)).SetPosition(
+                        ((GraphicObject) gObject.elementAt(1)).getX()
+                                - (float)(tWidth * 0.0025),
+                        ((GraphicObject) gObject.elementAt(1)).getY());
+                ((GraphicObject) gObject.elementAt(2)).SetPosition(
+                        ((GraphicObject) gObject.elementAt(2)).getX()
+                                - (float)(((GraphicObject) gObject.elementAt(2)).getG_wid() * 0.035),
+                        ((GraphicObject) gObject.elementAt(2)).getY());
+            }
+        }
     }
 
     /*@Override
@@ -198,10 +195,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                 stFlag = 1;
             } else if (stFlag == 1) {
                 if (stPos == 1) {
-                    m_Image.SetPosition((int) (tWidth * 3/6), (int) (tHeight * 1/4));
-                    stPos = 0;
-                } else if (stPos == 0){
-                    m_Image.SetPosition((int) (tWidth * 3/6), (int) (tHeight * 3/4));
+                    ((GraphicObject) gObject.elementAt(0)).SetPosition(
+                            (int) (tWidth * 1/6), ((int) (tHeight * 3/4))-3);
+                    stPos = 2;
+                } else if (stPos == 2){
+                    ((GraphicObject) gObject.elementAt(0)).SetPosition(
+                            (int) (tWidth * 1/6), ((int) (tHeight * 1/4))-3);
                     stPos = 1;
                 }
             }
