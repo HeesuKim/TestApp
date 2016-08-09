@@ -16,13 +16,13 @@ import java.util.Vector;
  */
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameViewThread m_thread;
-    private Vector gObject = new Vector();
+    private GraphicObject [] gObject = new GraphicObject[10];
     private GraphicObject GO, BG;
 
     private int stFlag = 0;
     private int stPos = 1;
 
-    private double tWidth, tHeight;
+    double tWidth, tHeight;
     private String timeText = "5.00";
 
     public GameView(Context context, int width, int height) {
@@ -38,7 +38,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         m_thread = new GameViewThread(getHolder(),this);
 
-        gObject.setSize(10);
         //BG
         BG = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.bgg3),
                 0, 0, 11, 8);
@@ -49,23 +48,22 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         //BALL
         GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.ba),
                 (int) (tWidth * 1/6), (int) (tHeight * 1/4), 11, 7);
-        gObject.add(0, GO);
+        gObject[0] = GO;
         //EARTH
         GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
                 (int) (tWidth * 3/6), (int) (tHeight * 1/4), 3, 1);
-        gObject.add(1, GO);
+        gObject[1] = GO;
         GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
                 (int) (tWidth * 3/6), (int) (tHeight * 3/4), 7, 2);
-        gObject.add(2, GO);
-
+        gObject[2] = GO;
     }
 
     public boolean correctAns(int cAns, int posNum) {
         System.out.println("cAns , posNum -> " + cAns + ", " + posNum);
-        if (posNum == ((GraphicObject) gObject.elementAt(1)).getPos()) {
-            return (cAns == ((GraphicObject) gObject.elementAt(1)).getAns());
+        if (posNum == gObject[1].getPos()) {
+            return (cAns == gObject[1].getAns());
         } else {
-            return (cAns == ((GraphicObject) gObject.elementAt(2)).getAns());
+            return (cAns == gObject[2].getAns());
         }
 
     }
@@ -95,8 +93,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             }
 
             BG.Draw(canvas);
-            for (int i = 0; i < 7; i++) {
-                vObj = (GraphicObject) gObject.elementAt(i);
+            for (int i = 0; i < 10; i++) {
+                vObj = gObject[i];
                 if (vObj != null){
                     vObj.Draw(canvas);
                 }
@@ -105,8 +103,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             if (tEndFlag == 0) {
                 tEndFlag = 1;
                 inTimer = new Timer();
-                mtim = new reTimer();
-                inTimer.schedule(mtim, 0, 10);
+                mtim = new reTimer(this, gObject);
+                inTimer.schedule(mtim, 0, 5);
             }
             if (tEndFlag == 1) {
                 if (mtim.getTime() <= 0) {
@@ -115,22 +113,21 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                     tEndFlag = 0;
                     if (correctAns(answer, stPos)) {
                         System.out.println("COR!!");
-                        if (stPos == ((GraphicObject) gObject.elementAt(1)).getPos()) {
-                            gObject.remove(2);
+                        if (stPos == gObject[1].getPos()) {
+                            gObject[2] = null;
                         } else {
-                            gObject.remove(1);
+                            gObject[1] = null;
                         }
                     } else {
                         System.out.println("WORRRR!!");
-                        gObject.remove(1);
-                        gObject.remove(1);
+                        gObject[1] = null;
+                        gObject[2] = null;
                     }
                 } else {
                     timeText = String.format("%01d.%02d", mtim.getTime()/1000,
                             (mtim.getTime()%1000)/10);
                 }
             }
-
             Paint p = new Paint();
             p.setTextSize(50);
             p.setColor(Color.BLACK);
@@ -169,18 +166,14 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             BG.SetPosition(BG.getX() + (float)(BG.getG_wid() * 0.0001), BG.getY());
         }
 
-        if(stFlag == 1 && tEndFlag == 1){
+        /*if(stFlag == 1 && tEndFlag == 1){
             if (mtim.getTime() >= 0) {
-                ((GraphicObject) gObject.elementAt(1)).SetPosition(
-                        ((GraphicObject) gObject.elementAt(1)).getX()
-                                - (float)(tWidth * 0.0025),
-                        ((GraphicObject) gObject.elementAt(1)).getY());
-                ((GraphicObject) gObject.elementAt(2)).SetPosition(
-                        ((GraphicObject) gObject.elementAt(2)).getX()
-                                - (float)(((GraphicObject) gObject.elementAt(2)).getG_wid() * 0.035),
-                        ((GraphicObject) gObject.elementAt(2)).getY());
+                gObject[1].SetPosition(gObject[1].getX() - (float)(tWidth * 0.0025),
+                        gObject[1].getY());
+                gObject[2].SetPosition(gObject[2].getX() - (float)(tWidth * 0.0025),
+                        gObject[2].getY());
             }
-        }
+        }*/
     }
 
     /*@Override
@@ -195,11 +188,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                 stFlag = 1;
             } else if (stFlag == 1) {
                 if (stPos == 1) {
-                    ((GraphicObject) gObject.elementAt(0)).SetPosition(
+                    gObject[0].SetPosition(
                             (int) (tWidth * 1/6), ((int) (tHeight * 3/4))-3);
                     stPos = 2;
                 } else if (stPos == 2){
-                    ((GraphicObject) gObject.elementAt(0)).SetPosition(
+                    gObject[0].SetPosition(
                             (int) (tWidth * 1/6), ((int) (tHeight * 1/4))-3);
                     stPos = 1;
                 }
