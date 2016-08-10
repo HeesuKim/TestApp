@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.util.Random;
 import java.util.Timer;
 import java.util.Vector;
 
@@ -19,11 +20,19 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GraphicObject [] gObject = new GraphicObject[10];
     private GraphicObject GO, BG;
 
+    Random randNum = new Random();
     private int stFlag = 0;
-    private int stPos = 1;
+    private int stPos = 1; //1 UP, 2 DOWN
 
     double tWidth, tHeight;
     private String timeText = "5.00";
+
+    int curNum = mkRan(0, 9);
+    int calNum = mkRan(1, 9);
+    int preNum = 0;
+    int answer = 0;
+    int ansPos = 0;
+    int mSym = 0; // 1 + , 2 -
 
     public GameView(Context context, int width, int height) {
         super(context);
@@ -34,7 +43,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         tWidth = width;
         tHeight = height;
 
-        System.out.println("@@@@tWidth = " + tWidth + " // tHeight = " + tHeight);
+        //System.out.println("@@@@tWidth = " + tWidth + " // tHeight = " + tHeight);
 
         m_thread = new GameViewThread(getHolder(),this);
 
@@ -51,46 +60,76 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         gObject[0] = GO;
         //EARTH
         GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
-                (int) (tWidth * 3/6), (int) (tHeight * 1/4), 3, 1);
+                (int) (tWidth * 3/6), (int) (tHeight * 1/4), 10, 1);
         gObject[1] = GO;
         GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
-                (int) (tWidth * 3/6), (int) (tHeight * 3/4), 7, 2);
+                (int) (tWidth * 3/6), (int) (tHeight * 3/4), 3, 2);
         gObject[2] = GO;
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
+                (int) (tWidth * 5/6), (int) (tHeight * 1/4), 3, 3);
+        gObject[3] = GO;
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
+                (int) (tWidth * 5/6), (int) (tHeight * 3/4), 10, 4);
+        gObject[4] = GO;
+
+        int startRan = mkRan(1, 2);
+        if (startRan == 1) {
+            preNum = (curNum + calNum) % 10;
+            mSym = 1;
+        } else {
+            if (curNum < calNum) {
+                preNum = (curNum + 10 - calNum) % 10;
+            } else {
+                preNum = (curNum - calNum) % 10;
+            }
+            mSym = 2;
+        }
+        answer = preNum % 10;
+        System.out.println("StartAnswer : " + answer);
+        startRan = mkRan(1, 2);
+        gObject[startRan].setBit(answer);
+        ansPos = startRan;
+        if (startRan == 1) {
+            gObject[2].setBit((answer + 1)%10);
+        } else {
+            gObject[1].setBit(Math.abs(answer - 1));
+        }
     }
 
-    public boolean correctAns(int cAns, int posNum) {
-        System.out.println("cAns , posNum -> " + cAns + ", " + posNum);
-        if (posNum == gObject[1].getPos()) {
-            return (cAns == gObject[1].getAns());
+   /* public boolean correctAns(int anPo, int posNum) {
+        //System.out.println("cAns , posNum -> " + cAns + ", " + posNum);
+        if (posNum == 1) {
+            return (anPo == posNum);
         } else {
             return (cAns == gObject[2].getAns());
         }
+    }*/
 
+
+    public int mkRan(int down, int up) {
+        int cal =  up - down;
+        int rst = Math.abs(randNum.nextInt() % (cal + 1));
+        return (rst + down);
     }
 
     private int tEndFlag = 0;
     private Timer inTimer;
     private reTimer mtim;
 
-    int answer = 3;
-
-
-    int tCounter = 0;
-    long tTimer;
     @Override
     public void onDraw(Canvas canvas) {
         canvas.drawColor(Color.BLACK);
         GraphicObject vObj;
         if (stFlag == 1) {
-            if(tCounter == 0) {
+            /*if(tCounter == 0) {
                 tTimer = System.currentTimeMillis();
             }
             tCounter++;
-            System.out.println("tCounter val = " + tCounter);
+            //System.out.println("tCounter val = " + tCounter);
             if(tCounter == 60) {
                 long dTimer = System.currentTimeMillis() - tTimer;
-                System.out.println("출력값 : " + dTimer);
-            }
+                //System.out.println("출력값 : " + dTimer);
+            }*/
 
             BG.Draw(canvas);
             for (int i = 0; i < 10; i++) {
@@ -111,13 +150,41 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                     inTimer.cancel();
                     timeText = "5.00";
                     tEndFlag = 0;
-                    if (correctAns(answer, stPos)) {
+                    if (ansPos == stPos) {
                         System.out.println("COR!!");
-                        if (stPos == gObject[1].getPos()) {
-                            gObject[2] = null;
+                        if (stPos == 1) {
+                            gObject[5] = gObject[1];
                         } else {
-                            gObject[1] = null;
+                            gObject[5] = gObject[2];
                         }
+                        gObject[1] = gObject[3];
+                        gObject[2] = gObject[4];
+                        gObject[3] = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
+                                (int) (tWidth * 5/6), (int) (tHeight * 1/4), 10, 3);
+                        gObject[4] = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
+                                (int) (tWidth * 5/6), (int) (tHeight * 3/4), 10, 4);
+                        curNum = preNum;
+                        calNum = mkRan(1, 9);
+                        mSym = mkRan(1, 2);
+                        if (mSym == 1) {
+                            preNum = (curNum + calNum) % 10;
+                        } else {
+                            if (curNum < calNum) {
+                                preNum = (curNum + 10 - calNum) % 10;
+                            } else {
+                                preNum = (curNum - calNum) % 10;
+                            }
+                        }
+                        answer = preNum%10;
+                        System.out.println("ANSWER : " + answer);
+                        int selRan = mkRan(1, 2);
+                        gObject[selRan].setBit(answer);
+                        if (selRan == 1) {
+                            gObject[2].setBit((answer + 1)%10);
+                        } else {
+                            gObject[1].setBit(Math.abs(answer - 1));
+                        }
+                        ansPos = selRan;
                     } else {
                         System.out.println("WORRRR!!");
                         gObject[1] = null;
@@ -130,9 +197,25 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             }
             Paint p = new Paint();
             p.setTextSize(50);
-            p.setColor(Color.BLACK);
+            p.setColor(Color.WHITE);
             canvas.drawText("남은 선택 시간 : " + timeText + "초",
                     (int) (tWidth * 1/10), (int) (tHeight * 1/8), p);
+
+            Paint p2 = new Paint();
+            p2.setTextSize(50);
+            p2.setColor(Color.WHITE);
+            canvas.drawText("현재숫자 : " + curNum,
+                    (int) (tWidth * 6/10), (int) (tHeight * 1/8), p2);
+
+            Paint p3 = new Paint();
+            p3.setTextSize(50);
+            if (mSym == 1) {
+                p3.setColor(Color.BLUE);
+            } else {
+                p3.setColor(Color.RED);
+            }
+            canvas.drawText("" + calNum,
+                    gObject[0].getX(), gObject[0].getY(), p3);
         }
     }
 
@@ -165,15 +248,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         } else {
             BG.SetPosition(BG.getX() + (float)(BG.getG_wid() * 0.0001), BG.getY());
         }
-
-        /*if(stFlag == 1 && tEndFlag == 1){
-            if (mtim.getTime() >= 0) {
-                gObject[1].SetPosition(gObject[1].getX() - (float)(tWidth * 0.0025),
-                        gObject[1].getY());
-                gObject[2].SetPosition(gObject[2].getX() - (float)(tWidth * 0.0025),
-                        gObject[2].getY());
-            }
-        }*/
     }
 
     /*@Override
