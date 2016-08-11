@@ -10,7 +10,6 @@ import android.view.SurfaceView;
 
 import java.util.Random;
 import java.util.Timer;
-import java.util.Vector;
 
 /**
  * Created by Administrator on 2016-08-03.
@@ -19,6 +18,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameViewThread m_thread;
     private GraphicObject [] gObject = new GraphicObject[10];
     private GraphicObject GO, BG;
+    private calStage CS = new calStage();
 
     Random randNum = new Random();
     private int stFlag = 0;
@@ -30,9 +30,58 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     int curNum = mkRan(0, 9);
     int calNum = mkRan(1, 9);
     int preNum = 0;
-    int answer = 0;
     int ansPos = 0;
-    int mSym = 0; // 1 + , 2 -
+    int mSym = 1; // 1 + , 2 -
+
+    private int tEndFlag = 0;
+    private Timer inTimer;
+    private reTimer mtim;
+    private int stageNum = 1;
+    private int waveCounter = 0;
+
+    public void initStage() {
+        gObject[5] = null;
+        stFlag = 0;
+        waveCounter = 0;
+        BG = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.bgg3),
+                0, 0, 11, 8);
+        BG.SetPosition((int) (-BG.getG_wid() + tWidth), ((int)(tHeight - BG.getG_hei()))/2);
+
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.ba),
+                (int) (tWidth * 1/6), (int) (tHeight * 1/4), 11, 7);
+        gObject[0] = GO;
+        //EARTH
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
+                (int) (tWidth * 3/6), (int) (tHeight * 1/4), 10, 1);
+        gObject[1] = GO;
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
+                (int) (tWidth * 3/6), (int) (tHeight * 3/4), 3, 2);
+        gObject[2] = GO;
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
+                (int) (tWidth * 5/6), (int) (tHeight * 1/4), 3, 3);
+        gObject[3] = GO;
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
+                (int) (tWidth * 5/6), (int) (tHeight * 3/4), 10, 4);
+        gObject[4] = GO;
+
+        preNum = CS.selStage(stageNum, curNum, calNum);
+        if (preNum >= 50) {
+            mSym = 2;
+            preNum -= 50;
+        } else {
+            mSym = 1;
+        }
+        System.out.println("StartAnswer : " + preNum);
+
+        int startRan = mkRan(1, 2);
+        gObject[startRan].setBit(preNum);
+        ansPos = startRan;
+        if (startRan == 1) {
+            gObject[2].setBit((preNum + 1)%10);
+        } else {
+            gObject[1].setBit(Math.abs(preNum - 1));
+        }
+    }
 
     public GameView(Context context, int width, int height) {
         super(context);
@@ -47,7 +96,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         m_thread = new GameViewThread(getHolder(),this);
 
-        //BG
+        initStage();
+       /* //BG
         BG = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.bgg3),
                 0, 0, 11, 8);
         BG.SetPosition((int) (-BG.getG_wid() + tWidth), ((int)(tHeight - BG.getG_hei()))/2);
@@ -59,20 +109,23 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                 (int) (tWidth * 1/6), (int) (tHeight * 1/4), 11, 7);
         gObject[0] = GO;
         //EARTH
-        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
                 (int) (tWidth * 3/6), (int) (tHeight * 1/4), 10, 1);
         gObject[1] = GO;
-        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
                 (int) (tWidth * 3/6), (int) (tHeight * 3/4), 3, 2);
         gObject[2] = GO;
-        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
                 (int) (tWidth * 5/6), (int) (tHeight * 1/4), 3, 3);
         gObject[3] = GO;
-        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
                 (int) (tWidth * 5/6), (int) (tHeight * 3/4), 10, 4);
         gObject[4] = GO;
 
-        int startRan = mkRan(1, 2);
+        preNum = CS.calAdd(curNum, calNum);
+        System.out.println("StartAnswer : " + preNum);
+
+        *//*int startRan = mkRan(1, 2);
         if (startRan == 1) {
             preNum = (curNum + calNum) % 10;
             mSym = 1;
@@ -85,17 +138,16 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             mSym = 2;
         }
         answer = preNum % 10;
-        System.out.println("StartAnswer : " + answer);
-        startRan = mkRan(1, 2);
-        gObject[startRan].setBit(answer);
+        System.out.println("StartAnswer : " + answer);*//*
+        int startRan = mkRan(1, 2);
+        gObject[startRan].setBit(preNum);
         ansPos = startRan;
         if (startRan == 1) {
-            gObject[2].setBit((answer + 1)%10);
+            gObject[2].setBit((preNum + 1)%10);
         } else {
-            gObject[1].setBit(Math.abs(answer - 1));
-        }
+            gObject[1].setBit(Math.abs(preNum - 1));
+        }*/
     }
-
    /* public boolean correctAns(int anPo, int posNum) {
         //System.out.println("cAns , posNum -> " + cAns + ", " + posNum);
         if (posNum == 1) {
@@ -105,32 +157,17 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }*/
 
-
     public int mkRan(int down, int up) {
         int cal =  up - down;
         int rst = Math.abs(randNum.nextInt() % (cal + 1));
         return (rst + down);
     }
 
-    private int tEndFlag = 0;
-    private Timer inTimer;
-    private reTimer mtim;
-
     @Override
     public void onDraw(Canvas canvas) {
         canvas.drawColor(Color.BLACK);
         GraphicObject vObj;
         if (stFlag == 1) {
-            /*if(tCounter == 0) {
-                tTimer = System.currentTimeMillis();
-            }
-            tCounter++;
-            //System.out.println("tCounter val = " + tCounter);
-            if(tCounter == 60) {
-                long dTimer = System.currentTimeMillis() - tTimer;
-                //System.out.println("출력값 : " + dTimer);
-            }*/
-
             BG.Draw(canvas);
             for (int i = 0; i < 10; i++) {
                 vObj = gObject[i];
@@ -148,6 +185,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             if (tEndFlag == 1) {
                 if (mtim.getTime() <= 0) {
                     inTimer.cancel();
+                    waveCounter++;
+                    System.out.println("ANSwaveCounter -> " + waveCounter);
                     timeText = "5.00";
                     tEndFlag = 0;
                     if (ansPos == stPos) {
@@ -159,13 +198,42 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                         }
                         gObject[1] = gObject[3];
                         gObject[2] = gObject[4];
-                        gObject[3] = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
-                                (int) (tWidth * 5/6), (int) (tHeight * 1/4), 10, 3);
-                        gObject[4] = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.e3),
-                                (int) (tWidth * 5/6), (int) (tHeight * 3/4), 10, 4);
+
+                        if (waveCounter >= 4) {
+                            gObject[3] = null;
+                            gObject[4] = null;
+                            if (waveCounter == 5) {
+                                stageNum++;
+                                canvas.drawColor(Color.BLACK);
+                                initStage();
+                            }
+                        } else {
+                            gObject[3] = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
+                                    (int) (tWidth * 5/6), (int) (tHeight * 1/4), 10, 3);
+                            gObject[4] = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
+                                    (int) (tWidth * 5/6), (int) (tHeight * 3/4), 10, 4);
+                        }
                         curNum = preNum;
                         calNum = mkRan(1, 9);
-                        mSym = mkRan(1, 2);
+
+                        preNum = CS.selStage(stageNum, curNum, calNum);
+                        if (preNum >= 50) {
+                            mSym = 2;
+                            preNum -= 50;
+                        } else {
+                            mSym = 1;
+                        }
+                        System.out.println("ANSWER : " + preNum);
+
+                        int selRan = mkRan(1, 2);
+                        gObject[selRan].setBit(preNum);
+                        if (selRan == 1) {
+                            gObject[2].setBit((preNum + 1)%10);
+                        } else {
+                            gObject[1].setBit(Math.abs(preNum - 1));
+                        }
+                        ansPos = selRan;
+                        /*mSym = mkRan(1, 2);
                         if (mSym == 1) {
                             preNum = (curNum + calNum) % 10;
                         } else {
@@ -175,20 +243,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                                 preNum = (curNum - calNum) % 10;
                             }
                         }
-                        answer = preNum%10;
-                        System.out.println("ANSWER : " + answer);
-                        int selRan = mkRan(1, 2);
-                        gObject[selRan].setBit(answer);
-                        if (selRan == 1) {
-                            gObject[2].setBit((answer + 1)%10);
-                        } else {
-                            gObject[1].setBit(Math.abs(answer - 1));
-                        }
-                        ansPos = selRan;
+                        answer = preNum%10;*/
                     } else {
                         System.out.println("WORRRR!!");
-                        gObject[1] = null;
-                        gObject[2] = null;
+                        stageNum = 1;
+                        canvas.drawColor(Color.BLACK);
+                        initStage();
                     }
                 } else {
                     timeText = String.format("%01d.%02d", mtim.getTime()/1000,
@@ -208,7 +268,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                     (int) (tWidth * 6/10), (int) (tHeight * 1/8), p2);
 
             Paint p3 = new Paint();
-            p3.setTextSize(50);
+            p3.setTextSize(70);
             if (mSym == 1) {
                 p3.setColor(Color.BLUE);
             } else {

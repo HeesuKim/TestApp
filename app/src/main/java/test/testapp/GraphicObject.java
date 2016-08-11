@@ -46,16 +46,16 @@ public class GraphicObject {
     }
 
     public void setBit(int swNum) {
-        if (swNum == 1) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.en1); }
-        if (swNum == 2) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.en2); }
-        if (swNum == 3) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.en3); }
-        if (swNum == 4) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.en4); }
-        if (swNum == 5) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.en5); }
-        if (swNum == 6) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.en6); }
-        if (swNum == 7) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.en7); }
-        if (swNum == 8) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.en8); }
-        if (swNum == 9) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.en9); }
-        if (swNum == 0) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.en0); }
+        if (swNum == 1) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.e1); }
+        if (swNum == 2) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.e2); }
+        if (swNum == 3) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.e3); }
+        if (swNum == 4) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.e4); }
+        if (swNum == 5) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.e5); }
+        if (swNum == 6) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.e6); }
+        if (swNum == 7) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.e7); }
+        if (swNum == 8) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.e8); }
+        if (swNum == 9) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.e9); }
+        if (swNum == 0) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.e0); }
 
     }
 
