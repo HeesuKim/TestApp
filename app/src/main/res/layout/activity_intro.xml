@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#000000"
+    android:orientation="horizontal"
+   >
+  <!--  <ImageView
+        android:layout_width="230dp"
+        android:layout_height="100dp"
+        android:id="@+id/imageView"
+        android:src="@drawable/gu"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="44dp"
+        android:layout_x="391dp"
+        android:layout_y="161dp" />-->
+<!--
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageView2"
+        android:layout_marginLeft="281dp"
+        android:layout_marginStart="281dp"
+        android:src="@drawable/x"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_x="306dp"
+        android:layout_y="148dp" />-->
+
+  <ImageView
+        android:layout_width="677dp"
+        android:layout_height="507dp"
+        android:id="@+id/imageView3"
+        android:src="@drawable/heesu"
+      android:focusable="false" />
+
+  <!--  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_centerHorizontal="true"
+      android:layout_centerVertical="true"
+      android:textColor="#8b4513"
+      android:textSize="100sp"
+      android:text="TALK"/>-->
+
+</LinearLayout>
