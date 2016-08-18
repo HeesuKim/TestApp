@@ -83,84 +83,53 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    public GameView(Context context, int width, int height) {
+    public void setLength(int width, int height) {
+        tWidth = width;
+        tHeight = height;
+        initStage();
+    }
+
+    public GameView(Context context) {
         super(context);
         setFocusable(true);
         AppManager.getInstance().setGameView(this);
         AppManager.getInstance().setResources(getResources());
         getHolder().addCallback(this);
-        tWidth = width;
-        tHeight = height;
-
-        //System.out.println("@@@@tWidth = " + tWidth + " // tHeight = " + tHeight);
 
         m_thread = new GameViewThread(getHolder(),this);
 
-        initStage();
-       /* //BG
-        BG = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.bgg3),
-                0, 0, 11, 8);
-        BG.SetPosition((int) (-BG.getG_wid() + tWidth), ((int)(tHeight - BG.getG_hei()))/2);
-
-        //System.out.println("@@@@idth = " + BG.getG_wid() + " // tHeight = " + BG.getG_hei());
-        //System.out.println("$$r3r23$$$$tWidth = " + BG.getG_wid() + " // tHeight = " + BG.getG_hei());
-        //BALL
-        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.ba),
-                (int) (tWidth * 1/6), (int) (tHeight * 1/4), 11, 7);
-        gObject[0] = GO;
-        //EARTH
-        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
-                (int) (tWidth * 3/6), (int) (tHeight * 1/4), 10, 1);
-        gObject[1] = GO;
-        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
-                (int) (tWidth * 3/6), (int) (tHeight * 3/4), 3, 2);
-        gObject[2] = GO;
-        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
-                (int) (tWidth * 5/6), (int) (tHeight * 1/4), 3, 3);
-        gObject[3] = GO;
-        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
-                (int) (tWidth * 5/6), (int) (tHeight * 3/4), 10, 4);
-        gObject[4] = GO;
-
-        preNum = CS.calAdd(curNum, calNum);
-        System.out.println("StartAnswer : " + preNum);
-
-        *//*int startRan = mkRan(1, 2);
-        if (startRan == 1) {
-            preNum = (curNum + calNum) % 10;
-            mSym = 1;
-        } else {
-            if (curNum < calNum) {
-                preNum = (curNum + 10 - calNum) % 10;
-            } else {
-                preNum = (curNum - calNum) % 10;
-            }
-            mSym = 2;
-        }
-        answer = preNum % 10;
-        System.out.println("StartAnswer : " + answer);*//*
-        int startRan = mkRan(1, 2);
-        gObject[startRan].setBit(preNum);
-        ansPos = startRan;
-        if (startRan == 1) {
-            gObject[2].setBit((preNum + 1)%10);
-        } else {
-            gObject[1].setBit(Math.abs(preNum - 1));
-        }*/
     }
-   /* public boolean correctAns(int anPo, int posNum) {
-        //System.out.println("cAns , posNum -> " + cAns + ", " + posNum);
-        if (posNum == 1) {
-            return (anPo == posNum);
-        } else {
-            return (cAns == gObject[2].getAns());
-        }
-    }*/
 
     public int mkRan(int down, int up) {
         int cal =  up - down;
         int rst = Math.abs(randNum.nextInt() % (cal + 1));
         return (rst + down);
+    }
+
+
+    int pusF = 0;
+    public void onPause() {
+        /*try {
+            synchronized (m_thread) {
+                System.out.println("ThreadWait");
+                m_thread.wait();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }*/
+        //m_thread.setRunning(false);
+
+        pusF = 1;
+        if (m_thread != null && mtim != null) {
+            m_thread.onPause(true);
+            mtim.onPause(true);
+        }
+    }
+
+    public void onResume() {
+        //m_thread.setRunning(true);
+        m_thread.onPause(false);
+        mtim.onPause(false);
     }
 
     @Override
@@ -284,13 +253,17 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+        System.out.println("NONOT;CRRRRRRRRREATE");
         m_thread.setRunning(true);
-        m_thread.start();
+        //m_thread.start();
+        if (pusF == 0) {
+            m_thread.start();
+        }
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        boolean retry = true;
+       /* boolean retry = true;
         m_thread.setRunning(false);
         while (retry) {
             try {
@@ -299,15 +272,23 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             } catch (InterruptedException e) {
 
             }
-        }
+        }*/
     }
 
+    int moveBallF = 0;
     public void Update() {
         if (BG.getX() >= 0) {
             BG.SetPosition(0, BG.getY());
         } else {
             BG.SetPosition(BG.getX() + (float)(BG.getG_wid() * 0.0001), BG.getY());
         }
+        System.out.println("TENS >> moveBallF/stPos : " + moveBallF + "/" + stPos);
+        if (moveBallF == 1) {
+           if (moveBall(stPos) == 1) {
+               moveBallF = 0;
+           }
+        }
+
     }
 
     /*@Override
@@ -315,20 +296,43 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
        return m_state.onKeyDown(keyCode, event);
     }*/
 
+    public int moveBall(int curPos) {
+        if (curPos == 1) {
+            gObject[0].SetPosition(
+                    gObject[0].getX(), gObject[0].getY() + (float)(tHeight * 0.30136)
+            );
+            if (gObject[0].getY() >= ((int) (tHeight * 3/4))) {
+                stPos = 2;
+                return 1;
+            }
+        } else {
+            gObject[0].SetPosition(
+                    gObject[0].getX(), gObject[0].getY() - (float)(tHeight * 0.30136)
+            );
+            if (gObject[0].getY() <= ((int) (tHeight * 1/4))) {
+                stPos = 1;
+                return 1;
+            }
+        }
+        return 0;
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            System.out.println("TOUCHIN");
             if (stFlag == 0) {
                 stFlag = 1;
             } else if (stFlag == 1) {
+                moveBallF = 1;
                 if (stPos == 1) {
-                    gObject[0].SetPosition(
+                    /*gObject[0].SetPosition(
                             (int) (tWidth * 1/6), ((int) (tHeight * 3/4))-3);
-                    stPos = 2;
+                    stPos = 2;*/
                 } else if (stPos == 2){
-                    gObject[0].SetPosition(
+                    /*gObject[0].SetPosition(
                             (int) (tWidth * 1/6), ((int) (tHeight * 1/4))-3);
-                    stPos = 1;
+                    stPos = 1;*/
                 }
             }
         }
