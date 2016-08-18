@@ -11,7 +11,7 @@
     tools:context="test.testapp.MainActivity">
 
     <TextView
-        android:text="Hellooofgdfgdgrgdfgo World!"
+        android:text="Hellooofgdfgdgrgdfgodfdf World!"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
