@@ -2,6 +2,7 @@ package test.testapp;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -45,7 +46,7 @@ public class Intro extends AppCompatActivity {
     }
         private void isIntro()
         {
-            Intent intent = new Intent(this,MainActivity.class);
+            Intent intent = new Intent(this,Menu.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
             startActivity(intent);
             finish();
