@@ -21,6 +21,7 @@ public class MainActivity extends Activity {
     private LayoutInflater inflater;
     private View popupWindow;
     private Button btClose, btConti;
+    int resumeF = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,22 +44,10 @@ public class MainActivity extends Activity {
         btConti = (Button) popupWindow.findViewById(R.id.pop_bt2);
     }
 
-   /* LayoutInflater inflater =
-            (LayoutInflater) getBaseContext().
-                    getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    View layout = inflater.inflate(R.layout.pause_popup,
-            (ViewGroup)findViewById(R.id.popup_view));
-    Button btClose = (Button) layout.findViewById(R.id.pop_bt1);
-    Button btConti = (Button) layout.findViewById(R.id.pop_bt2);*/
-
-    int resumeF = 0;
     @Override
     protected void onResume() {
-        System.out.println("KSTEN : onResume" + " // " + resumeF);
         super.onResume();
         if (resumeF == 1){
-            //GV.onResume();
-
             pw = new PopupWindow(popupWindow, WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.WRAP_CONTENT);
             btClose.setOnClickListener(new View.OnClickListener() {
@@ -81,7 +70,6 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onStop() {
-        System.out.println("KSTEN : onStop");
         super.onStop();
         GV.onPause();
         resumeF = 1;

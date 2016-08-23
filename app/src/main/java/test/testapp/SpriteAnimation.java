@@ -21,6 +21,8 @@ public class SpriteAnimation extends GraphicObject {
         mSRectangle = new Rect(0,0,0,0);
         mFrameTimer = 0;
         mCurrentFrame = 0;
+        g_wid = bitmap.getWidth();
+        g_hei = bitmap.getHeight();
     }
 
     public void InitSpriteData(int Height, int Width, int theFPS, int theFrameCount) {

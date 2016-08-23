@@ -17,21 +17,21 @@ import java.util.Timer;
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameViewThread m_thread;
     private GraphicObject [] gObject = new GraphicObject[10];
-    private GraphicObject GO, BG;
+    private GraphicObject GO, BG, BG2, Num, Num2;
+    private SpriteAnimation ball;
     private calStage CS = new calStage();
 
     Random randNum = new Random();
     private int stFlag = 0;
     private int stPos = 1; //1 UP, 2 DOWN
+    private int ballPos = 1;
 
     double tWidth, tHeight;
-    private String timeText = "5.00";
+    private String timeText = "2.00";
 
-    int curNum = mkRan(0, 9);
-    int calNum = mkRan(1, 9);
+    int curNum, calNum;
     int preNum = 0;
     int ansPos = 0;
-    int mSym = 1; // 1 + , 2 -
 
     private int tEndFlag = 0;
     private Timer inTimer;
@@ -39,39 +39,65 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private int stageNum = 1;
     private int waveCounter = 0;
 
+    int selFlag = 0;
+
+    int ansArr [] = new int[2];
+    int speed = 1;
+
+
+    String str;
+    Paint pnt;
+
     public void initStage() {
+        curNum = mkRan(0, 9);
+        preNum = 0;
+        ansPos = 0;
+        tEndFlag = 0;
+        ballPos = 1;
+        stPos = 1;
         gObject[5] = null;
         stFlag = 0;
         waveCounter = 0;
-        BG = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.bgg3),
-                0, 0, 11, 8);
+
+        //INFO
+        Num = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.num_0),
+                (int) (tWidth * 1/11), (int) (tHeight * 5/10));
+        Num2 = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.num_0),
+                (int) (tWidth * 4/10), (int) (tHeight * 1/8));
+
+        //BACKGROUND
+        BG = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.background),
+                0, 0);
+        BG2 = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.background),
+                0, 0);
         BG.SetPosition((int) (-BG.getG_wid() + tWidth), ((int)(tHeight - BG.getG_hei()))/2);
 
-        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.ba),
-                (int) (tWidth * 1/6), (int) (tHeight * 1/4), 11, 7);
-        gObject[0] = GO;
+        //BALL
+        ball = new SpriteAnimation(AppManager.getInstance().getBitmap(R.drawable.ball_ani));
+        ball.InitSpriteData((int) ball.getG_wid(), (int) ball.getG_hei(), 60, 6);
+        ball.SetPosition((int) (tWidth * 1/6), (int) (tHeight * 1/4) - (int) (ball.getG_hei()*1/3));
         //EARTH
-        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
-                (int) (tWidth * 3/6), (int) (tHeight * 1/4), 10, 1);
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.earth_base),
+                (int) (tWidth * 3/6), (int) (tHeight * 1/4));
         gObject[1] = GO;
-        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
-                (int) (tWidth * 3/6), (int) (tHeight * 3/4), 3, 2);
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.earth_base),
+                (int) (tWidth * 3/6), (int) (tHeight * 3/4));
         gObject[2] = GO;
-        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
-                (int) (tWidth * 5/6), (int) (tHeight * 1/4), 3, 3);
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.earth_base),
+                (int) (tWidth * 5/6), (int) (tHeight * 1/4));
         gObject[3] = GO;
-        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
-                (int) (tWidth * 5/6), (int) (tHeight * 3/4), 10, 4);
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.earth_base),
+                (int) (tWidth * 5/6), (int) (tHeight * 3/4));
         gObject[4] = GO;
 
-        preNum = CS.selStage(stageNum, curNum, calNum);
-        if (preNum >= 50) {
-            mSym = 2;
-            preNum -= 50;
-        } else {
-            mSym = 1;
-        }
-        System.out.println("StartAnswer : " + preNum);
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.earth_sel),
+                (int) (tWidth * 5/6), (int) (tHeight * 3/4));
+        gObject[6] = GO;
+
+        ansArr = CS.selStage(stageNum, curNum);
+        preNum = ansArr[0];
+        calNum = ansArr[1];
+        System.out.println("NTPSStartAnswer : " + preNum);
 
         int startRan = mkRan(1, 2);
         gObject[startRan].setBit(preNum);
@@ -81,6 +107,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         } else {
             gObject[1].setBit(Math.abs(preNum - 1));
         }
+        pnt = new Paint();
+        str = CS.stageInfo(stageNum);
+        pnt.setAntiAlias(true);
+        pnt.setColor(Color.WHITE);
+        pnt.setTextSize(50);
+        //canvas.drawText(str, (int) (tWidth * 1/11), (int) (tHeight * 5/10), pnt);
     }
 
     public void setLength(int width, int height) {
@@ -97,7 +129,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         getHolder().addCallback(this);
 
         m_thread = new GameViewThread(getHolder(),this);
-
     }
 
     public int mkRan(int down, int up) {
@@ -106,19 +137,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         return (rst + down);
     }
 
-
     int pusF = 0;
     public void onPause() {
-        /*try {
-            synchronized (m_thread) {
-                System.out.println("ThreadWait");
-                m_thread.wait();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
-        //m_thread.setRunning(false);
-
         pusF = 1;
         if (m_thread != null && mtim != null) {
             m_thread.onPause(true);
@@ -127,124 +147,104 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void onResume() {
-        //m_thread.setRunning(true);
         m_thread.onPause(false);
         mtim.onPause(false);
     }
 
+
     @Override
     public void onDraw(Canvas canvas) {
-        canvas.drawColor(Color.BLACK);
-        GraphicObject vObj;
-        if (stFlag == 1) {
-            BG.Draw(canvas);
-            for (int i = 0; i < 10; i++) {
-                vObj = gObject[i];
-                if (vObj != null){
-                    vObj.Draw(canvas);
-                }
+        if (canvas != null) {
+            canvas.drawColor(Color.BLACK);
+            if (stFlag == 0) {
+                canvas.drawText(str, (int) (tWidth * 2/11), (int) (tHeight * 5/10), pnt);
             }
-
-            if (tEndFlag == 0) {
-                tEndFlag = 1;
-                inTimer = new Timer();
-                mtim = new reTimer(this, gObject);
-                inTimer.schedule(mtim, 0, 5);
-            }
-            if (tEndFlag == 1) {
-                if (mtim.getTime() <= 0) {
-                    inTimer.cancel();
-                    waveCounter++;
-                    System.out.println("ANSwaveCounter -> " + waveCounter);
-                    timeText = "5.00";
-                    tEndFlag = 0;
-                    if (ansPos == stPos) {
-                        System.out.println("COR!!");
-                        if (stPos == 1) {
-                            gObject[5] = gObject[1];
-                        } else {
-                            gObject[5] = gObject[2];
-                        }
-                        gObject[1] = gObject[3];
-                        gObject[2] = gObject[4];
-
-                        if (waveCounter >= 4) {
-                            gObject[3] = null;
-                            gObject[4] = null;
-                            if (waveCounter == 5) {
-                                stageNum++;
-                                canvas.drawColor(Color.BLACK);
-                                initStage();
-                            }
-                        } else {
-                            gObject[3] = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
-                                    (int) (tWidth * 5/6), (int) (tHeight * 1/4), 10, 3);
-                            gObject[4] = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.en),
-                                    (int) (tWidth * 5/6), (int) (tHeight * 3/4), 10, 4);
-                        }
-                        curNum = preNum;
-                        calNum = mkRan(1, 9);
-
-                        preNum = CS.selStage(stageNum, curNum, calNum);
-                        if (preNum >= 50) {
-                            mSym = 2;
-                            preNum -= 50;
-                        } else {
-                            mSym = 1;
-                        }
-                        System.out.println("ANSWER : " + preNum);
-
-                        int selRan = mkRan(1, 2);
-                        gObject[selRan].setBit(preNum);
-                        if (selRan == 1) {
-                            gObject[2].setBit((preNum + 1)%10);
-                        } else {
-                            gObject[1].setBit(Math.abs(preNum - 1));
-                        }
-                        ansPos = selRan;
-                        /*mSym = mkRan(1, 2);
-                        if (mSym == 1) {
-                            preNum = (curNum + calNum) % 10;
-                        } else {
-                            if (curNum < calNum) {
-                                preNum = (curNum + 10 - calNum) % 10;
-                            } else {
-                                preNum = (curNum - calNum) % 10;
-                            }
-                        }
-                        answer = preNum%10;*/
-                    } else {
-                        System.out.println("WORRRR!!");
-                        stageNum = 1;
-                        canvas.drawColor(Color.BLACK);
-                        initStage();
+            GraphicObject vObj;
+            if (stFlag == 1) {
+                BG.Draw(canvas);
+                ball.Draw(canvas);
+                for (int i = 1; i < 10; i++) {
+                    vObj = gObject[i];
+                    if (vObj != null){
+                        vObj.Draw(canvas);
                     }
-                } else {
-                    timeText = String.format("%01d.%02d", mtim.getTime()/1000,
-                            (mtim.getTime()%1000)/10);
                 }
-            }
-            Paint p = new Paint();
-            p.setTextSize(50);
-            p.setColor(Color.WHITE);
-            canvas.drawText("남은 선택 시간 : " + timeText + "초",
-                    (int) (tWidth * 1/10), (int) (tHeight * 1/8), p);
 
-            Paint p2 = new Paint();
-            p2.setTextSize(50);
-            p2.setColor(Color.WHITE);
-            canvas.drawText("현재숫자 : " + curNum,
-                    (int) (tWidth * 6/10), (int) (tHeight * 1/8), p2);
+                if (tEndFlag == 0) {
+                    tEndFlag = 1;
+                    inTimer = new Timer();
+                    mtim = new reTimer(this, gObject);
+                    if (stageNum >= 5) {
+                        mtim.setSpeed(2);
+                        speed = 2;
+                    }
+                    inTimer.schedule(mtim, 0, 5);
+                }
+                if (tEndFlag == 1) {
+                    if (mtim.getTime() <= 0) {
+                        inTimer.cancel();
+                        waveCounter++;
+                        System.out.println("ANSwaveCounter -> " + waveCounter);
+                        //timeText = "2.00";
+                        tEndFlag = 0;
+                        if (ansPos == stPos) {
+                            System.out.println("COR!!");
+                            if (ballPos != stPos) {
+                                moveBallF = 1;
+                            }
+                            gObject[5] = gObject[stPos];
+                            gObject[5].setBit(10);
+                            gObject[1] = gObject[3];
+                            gObject[2] = gObject[4];
 
-            Paint p3 = new Paint();
-            p3.setTextSize(70);
-            if (mSym == 1) {
-                p3.setColor(Color.BLUE);
-            } else {
-                p3.setColor(Color.RED);
+                            if (waveCounter >= ((10 * speed) - 1)) {
+                                gObject[3] = null;
+                                gObject[4] = null;
+                                if (waveCounter == (10 * speed)) {
+                                    stageNum++;
+                                    canvas.drawColor(Color.BLACK);
+                                    initStage();
+                                }
+                            } else {
+                                gObject[3] = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.earth_base),
+                                        (int) (tWidth * 5/6), (int) (tHeight * 1/4));
+                                gObject[4] = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.earth_base),
+                                        (int) (tWidth * 5/6), (int) (tHeight * 3/4));
+                            }
+                            curNum = preNum;
+
+                            ansArr = CS.selStage(stageNum, curNum);
+                            preNum = ansArr[0];
+                            calNum = ansArr[1];
+                            System.out.println("NTPSANSWER : " + preNum);
+
+                            int selRan = mkRan(1, 2);
+                            gObject[selRan].setBit(preNum);
+                            if (selRan == 1) {
+                                gObject[2].setBit((preNum + 1)%10);
+                            } else {
+                                gObject[1].setBit(Math.abs(preNum - 1));
+                            }
+                            ansPos = selRan;
+                        } else {
+                            System.out.println("WORRRR!!");
+                            stageNum = 1;
+                            canvas.drawColor(Color.BLACK);
+
+                            initStage();
+                        }
+                    }/* else {
+                        timeText = String.format("%01d.%02d", mtim.getTime()/1000,
+                                (mtim.getTime()%1000)/10);
+                    }*/
+                }
+                Num.setNum(curNum);
+                Num.Draw(canvas);
+
+                Num2.setNum(calNum);
+                Num2.SetPosition(ball.getX(), ball.getY());
+                Num2.Draw(canvas);
             }
-            canvas.drawText("" + calNum,
-                    gObject[0].getX(), gObject[0].getY(), p3);
         }
     }
 
@@ -253,9 +253,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        System.out.println("NONOT;CRRRRRRRRREATE");
         m_thread.setRunning(true);
-        //m_thread.start();
         if (pusF == 0) {
             m_thread.start();
         }
@@ -276,18 +274,28 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     int moveBallF = 0;
+    long gameTime;
     public void Update() {
-        if (BG.getX() >= 0) {
-            BG.SetPosition(0, BG.getY());
-        } else {
-            BG.SetPosition(BG.getX() + (float)(BG.getG_wid() * 0.0001), BG.getY());
+        BG.SetPosition(BG.getX() + (float)(BG.getG_wid() * 0.008), BG.getY());
+        if (BG.getX() >= tWidth) {
+            BG.SetPosition(BG.getX() - (int) tWidth * 2, BG.getY());
         }
-        System.out.println("TENS >> moveBallF/stPos : " + moveBallF + "/" + stPos);
+        if (BG.getX() >= 0) {
+            BG2.SetPosition((int) (tWidth - BG.getX()), BG2.getY());
+        } else {
+            BG2.SetPosition(-((int) (tWidth + BG.getX())), BG2.getY());
+        }
+
+        gameTime = System.currentTimeMillis();
+        ball.Update(gameTime);
+
         if (moveBallF == 1) {
-           if (moveBall(stPos) == 1) {
+           if (moveBall(ballPos) == 1) {
                moveBallF = 0;
            }
         }
+
+        selEarth(stPos);
 
     }
 
@@ -298,41 +306,55 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     public int moveBall(int curPos) {
         if (curPos == 1) {
-            gObject[0].SetPosition(
-                    gObject[0].getX(), gObject[0].getY() + (float)(tHeight * 0.30136)
-            );
-            if (gObject[0].getY() >= ((int) (tHeight * 3/4))) {
-                stPos = 2;
+            if (ball.getY() + (float)(tHeight * 0.02)
+                    >= (int) (tHeight * 3/4) - (int) (ball.getG_hei()*1/3)) {
+                ball.SetPosition(
+                        ball.getX(), (int) (tHeight * 3/4) - (int) (ball.getG_hei()*1/3));
+                ballPos = 2;
                 return 1;
+            } else {
+                ball.SetPosition(
+                        ball.getX(), ball.getY() + (float)(tHeight * 0.02));
             }
         } else {
-            gObject[0].SetPosition(
-                    gObject[0].getX(), gObject[0].getY() - (float)(tHeight * 0.30136)
-            );
-            if (gObject[0].getY() <= ((int) (tHeight * 1/4))) {
-                stPos = 1;
+            if (ball.getY() + (float)(tHeight * 0.02)
+                    <= (int) (tHeight * 1/4) - (int) (ball.getG_hei()*1/3)) {
+                ball.SetPosition(
+                        ball.getX(), (int) (tHeight * 1/4) - (int) (ball.getG_hei()*1/3));
+                ballPos = 1;
                 return 1;
+            } else {
+                ball.SetPosition(
+                        ball.getX(), ball.getY() - (float)(tHeight * 0.02));
             }
         }
         return 0;
     }
 
+    public void selEarth(int curPos) {
+        if (selFlag == 0) {
+            gObject[6].SetPosition(gObject[curPos].getX(), gObject[curPos].getY());
+            selFlag = 1;
+        } else {
+            gObject[6].SetPosition(gObject[curPos].getX(), gObject[curPos].getY());
+            selFlag = 0;
+        }
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            System.out.println("TOUCHIN");
             if (stFlag == 0) {
                 stFlag = 1;
             } else if (stFlag == 1) {
-                moveBallF = 1;
                 if (stPos == 1) {
-                    /*gObject[0].SetPosition(
-                            (int) (tWidth * 1/6), ((int) (tHeight * 3/4))-3);
-                    stPos = 2;*/
+                   /* ball.SetPosition(
+                            (int) (tWidth * 1/6), (int) (tHeight * 3/4) - (int) (ball.getG_hei()*1/3));*/
+                    stPos = 2;
                 } else if (stPos == 2){
-                    /*gObject[0].SetPosition(
-                            (int) (tWidth * 1/6), ((int) (tHeight * 1/4))-3);
-                    stPos = 1;*/
+                    /*ball.SetPosition(
+                            (int) (tWidth * 1/6), (int) (tHeight * 1/4) - (int) (ball.getG_hei()*1/3));*/
+                   stPos = 1;
                 }
             }
         }
