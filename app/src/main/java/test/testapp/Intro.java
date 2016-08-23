@@ -31,16 +31,11 @@ public class Intro extends AppCompatActivity {
                 try
                 {
                     intro=(ImageView) findViewById(R.id.imageView3);
-
                     Animation alphaAnim= AnimationUtils.loadAnimation(Intro.this,R.anim.fade_in);
-
                     Animation alphaAni1q= AnimationUtils.loadAnimation(Intro.this,R.anim.fade_out);
-                    //System.out.println("thisPosition1");
                     intro.startAnimation(alphaAnim);
-                    //System.out.println("thisPosition2");
                     //Thread.sleep(3500);
                     intro.startAnimation(alphaAni1q);
-                    //System.out.println("thisPosition3");
                     isIntro();
                 }
                 catch (Exception e){}
@@ -55,7 +50,6 @@ public class Intro extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
-
 }
 
 
