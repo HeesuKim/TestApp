@@ -3,17 +3,15 @@ package test.testapp;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-/**
+/**게임 내 이미지 관련 클래스
  * Created by Administrator on 2016-08-03.
  */
 public class GraphicObject {
     protected Bitmap m_bitmap;
-    protected float m_x;
-    protected float m_y;
-    protected int m_ans;
-    protected int m_pos;
-    protected double g_wid;
-    protected double g_hei;
+    protected float m_x;        //가로좌표
+    protected float m_y;        //세로좌표
+    protected double g_wid;     //이미지의 적용 가로길이(단말기의 해상도에 따라 다름)
+    protected double g_hei;     //이미지의 적용 세로길이(단말기의 해상도에 따라 다름)
 
 
     public GraphicObject(Bitmap bitmap) {
@@ -26,23 +24,18 @@ public class GraphicObject {
         m_bitmap = bitmap;
         m_x = x;
         m_y = y;
+        //이미지의 단말기별 적용 길이
         g_wid = bitmap.getWidth();
         g_hei = bitmap.getHeight();
     }
 
+    //좌표 재조정
     public void SetPosition(float x, float y) {
         m_x = x;
         m_y = y;
     }
 
-    public void setAns(int ans) {
-        m_ans = ans;
-    }
-
-    public void setPos(int pos) {
-        m_pos = pos;
-    }
-
+    //들어온 수에 따라 땅 숫자 이미지 변환
     public void setBit(int swNum) {
         if (swNum == 1) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.earth_1); }
         if (swNum == 2) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.earth_2); }
@@ -57,6 +50,7 @@ public class GraphicObject {
         if (swNum == 10) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.earth_base); }
     }
 
+    //들어온 수에 따라 정보관련 숫자 이미지 변환
     public void setNum(int swNum) {
         if (swNum == 1) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.num_1); }
         if (swNum == 2) { m_bitmap = AppManager.getInstance().getBitmap(R.drawable.num_2); }
@@ -83,6 +77,6 @@ public class GraphicObject {
     }
 
     public double getG_wid() { return g_wid; }
-    public double getG_hei() { return g_hei; }
 
+    public double getG_hei() { return g_hei; }
 }

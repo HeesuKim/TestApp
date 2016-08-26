@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 public class AppManager {
     private static AppManager s_instance;
 
+    //Singleton
     public static AppManager getInstance() {
         if (s_instance == null) {
             s_instance = new AppManager();
@@ -32,6 +33,7 @@ public class AppManager {
         return m_resources;
     }
 
+    //이미지 Bitmap 불러오기
     public Bitmap getBitmap(int r) {
         return BitmapFactory.decodeResource(m_resources,r);
     }

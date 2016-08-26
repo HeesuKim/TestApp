@@ -42,6 +42,7 @@ public class SpriteAnimation extends GraphicObject {
         canvas.drawBitmap(m_bitmap, mSRectangle, dest, null);
     }
 
+    //게임시간을 받아 이미지프레임을 하나씩 옮기며 연속성표현
     public void Update(long GameTime) {
         if (GameTime > (mFrameTimer + mFPS)) {
             mFrameTimer = GameTime;
