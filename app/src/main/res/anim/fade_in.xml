@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <alpha android:duration="3000"
+    <alpha android:duration="2000"
             android:fromAlpha="0.0"
             android:toAlpha="1.0"
             android:interpolator="@android:anim/accelerate_interpolator"/>

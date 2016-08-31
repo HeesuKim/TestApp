@@ -1,6 +1,7 @@
 package test.testapp;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 
@@ -23,6 +24,9 @@ public class SpriteAnimation extends GraphicObject {
         mCurrentFrame = 0;
         g_wid = bitmap.getWidth();
         g_hei = bitmap.getHeight();
+
+
+
     }
 
     public void InitSpriteData(int Height, int Width, int theFPS, int theFrameCount) {

@@ -17,14 +17,11 @@ import android.widget.PopupWindow;
 
 public class MainActivity extends Activity {
     private GameView GV;
-
-    //일시정지, 재개에 필요한 변수들
     private PopupWindow pw;
     private LayoutInflater inflater;
     private View popupWindow;
     private Button btClose, btConti;
     int resumeF = 0;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,8 +35,6 @@ public class MainActivity extends Activity {
         GV = new GameView(this);
         GV.setLength(outSize.x, outSize.y);
         setContentView(GV);
-
-        //일시정지시 출력될 팝업창에 관련된 변수들
         inflater =
                 (LayoutInflater) getBaseContext().
                         getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -52,22 +47,20 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        /*onResume은 앱 첫실행시에도 수행되므로 구분이 필요
-        * 따라서 일시정지 플래그가 1일 경우에만 팝업을 띄움*/
         if (resumeF == 1){
             pw = new PopupWindow(popupWindow, WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.WRAP_CONTENT);
             btClose.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    finish(); //현재 액티비티 종료
+                    finish();
                 }
             });
             btConti.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    pw.dismiss();   //팝업창 닫기
-                    GV.onResume();  //게임뷰 재시작
+                    pw.dismiss();
+                    GV.onResume();
                 }
             });
             pw.showAtLocation(popupWindow, Gravity.CENTER, 0, 0);
@@ -79,6 +72,6 @@ public class MainActivity extends Activity {
     protected void onStop() {
         super.onStop();
         GV.onPause();
-        resumeF = 1; //일시정지 플래그
+        resumeF = 1;
     }
 }

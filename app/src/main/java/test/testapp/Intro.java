@@ -30,12 +30,12 @@ public class Intro extends AppCompatActivity {
             {
                 try
                 {
-                    intro=(ImageView) findViewById(R.id.imageView3);
+                    intro=(ImageView) findViewById(R.id.logo);
                     Animation alphaAnim= AnimationUtils.loadAnimation(Intro.this,R.anim.fade_in);
-                    Animation alphaAni1q= AnimationUtils.loadAnimation(Intro.this,R.anim.fade_out);
+             /*       Animation alphaAni1q= AnimationUtils.loadAnimation(Intro.this,R.anim.fade_out);*/
                     intro.startAnimation(alphaAnim);
-                    //Thread.sleep(3500);
-                    intro.startAnimation(alphaAni1q);
+                    Thread.sleep(2000);
+                 /*   intro.startAnimation(alphaAni1q);*/
                     isIntro();
                 }
                 catch (Exception e){}
@@ -45,8 +45,8 @@ public class Intro extends AppCompatActivity {
     }
         private void isIntro()
         {
-            Intent intent = new Intent(this,MainActivity.class);
-            //intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            Intent intent = new Intent(this,Menu.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
             startActivity(intent);
             finish();
         }

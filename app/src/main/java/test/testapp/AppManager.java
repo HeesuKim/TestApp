@@ -35,6 +35,14 @@ public class AppManager {
 
     //이미지 Bitmap 불러오기
     public Bitmap getBitmap(int r) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 2;
+
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ball_ani, options);
         return BitmapFactory.decodeResource(m_resources,r);
     }
+
+
+
+
 }

@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.media.MediaPlayer;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -122,15 +123,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                 (int) (tWidth * 4/10), (int) (tHeight * 1/8));
 
         //BACKGROUND(같은 배경 두개를 이어붙임)
-        BG = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.background),
+        BG = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.background1),
                 0, 0);
-        BG2 = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.background),
+        BG2 = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.background2),
                 0, 0);
-        BG.SetPosition((int) (-BG.getG_wid() + tWidth), ((int)(tHeight - BG.getG_hei()))/2);
+        BG.SetPosition((int) (BG.getG_wid() + tWidth), ((int)(tHeight - BG.getG_hei()))/2);
 
         //BALL(메인 공)
         ball = new SpriteAnimation(AppManager.getInstance().getBitmap(R.drawable.ball_ani));
-        ball.InitSpriteData((int) ball.getG_wid(), (int) ball.getG_hei(), 60, 6);
+        ball.InitSpriteData((int) ball.getG_wid(), (int) ball.getG_hei(), 80, 8);
         ball.SetPosition((int) (tWidth * 1/6), (int) (tHeight * 1/4) - (int) (ball.getG_hei()*1/3));
 
         //BALLS & INFOS (추가되는 공들과 그 공들 위에 표시될 수)
@@ -444,7 +445,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     //onDraw외에 지속적으로 쓰레드의 구동과 함께 실행되어야 할 메소드들 포함
     public void Update() {
         //뒷 배경이미지 이동, 두장을 이어붙여 연속성 표현
-        BG.SetPosition(BG.getX() + (float)(BG.getG_wid() * 0.008), BG.getY());
+        BG.SetPosition(BG.getX() + (float)(BG.getG_wid() * 0.007), BG.getY());
         if (BG.getX() >= tWidth) {
             BG.SetPosition(BG.getX() - (int) tWidth * 2, BG.getY());
         }
@@ -453,7 +454,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         } else {
             BG2.SetPosition(-((int) (tWidth + BG.getX())), BG2.getY());
         }
-
         //공이 굴러가는 애니메이션 표현을 위해 현재 게임시간을 넘김
         gameTime = System.currentTimeMillis();
         ball.Update(gameTime);
