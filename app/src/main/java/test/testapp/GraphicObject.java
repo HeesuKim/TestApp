@@ -7,7 +7,7 @@ import android.graphics.Canvas;
  * Created by Administrator on 2016-08-03.
  */
 public class GraphicObject {
-    protected Bitmap m_bitmap;
+    protected Bitmap m_bitmap, resize_bitmap;
     protected float m_x;        //가로좌표
     protected float m_y;        //세로좌표
     protected double g_wid;     //이미지의 적용 가로길이(단말기의 해상도에 따라 다름)
@@ -27,6 +27,10 @@ public class GraphicObject {
         //이미지의 단말기별 적용 길이
         g_wid = bitmap.getWidth();
         g_hei = bitmap.getHeight();
+    }
+
+    public void aboutBG(int x, int y) {
+        resize_bitmap = Bitmap.createScaledBitmap(m_bitmap, x, y,true); //단말기 해상도 들고오는법?
     }
 
     //좌표 재조정
@@ -66,6 +70,10 @@ public class GraphicObject {
 
     public void Draw(Canvas canvas) {
         canvas.drawBitmap(m_bitmap, m_x, m_y, null);
+    }
+
+    public void DrawRe(Canvas canvas) {
+        canvas.drawBitmap(resize_bitmap, m_x, m_y, null);
     }
 
     public float getX() {

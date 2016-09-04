@@ -125,9 +125,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         //BACKGROUND(같은 배경 두개를 이어붙임)
         BG = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.background1),
                 0, 0);
+        BG.aboutBG((int) tWidth, (int) tHeight);
         BG2 = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.background2),
                 0, 0);
-        BG.SetPosition((int) (BG.getG_wid() + tWidth), ((int)(tHeight - BG.getG_hei()))/2);
+        BG2.aboutBG((int) tWidth, (int) tHeight);
+        //BG.SetPosition((int) (BG.getG_wid() + tWidth), ((int)(tHeight - BG.getG_hei()))/2);
+
 
         //BALL(메인 공)
         ball = new SpriteAnimation(AppManager.getInstance().getBitmap(R.drawable.ball_ani));
@@ -297,15 +300,16 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             }
             GraphicObject vObj;
             if (stFlag == 1) { //스테이지 설명 후 게임 진행중 상태
-                BG.Draw(canvas);        //배경
+                BG.DrawRe(canvas);        //배경
+                BG2.DrawRe(canvas);        //배경
                 //기존수와 메인공 연결선 path정보 설정부분
-                path.reset();   //path정보 초기화
+                /*path.reset();   //path정보 초기화
                 path.moveTo((float) (Num.getX() + (Num.getG_wid())),
                         (float) (Num.getY()+ (Num.getG_hei()/2)));  //path시작위치
                 path.quadTo((float) (tWidth * 3/13), (float) (Num.getY()+ (Num.getG_hei()/2)),
                         (float) (ball.getX() + (ball.getG_wid()/12)),
                         (float) (ball.getY() + (ball.getG_hei()/2)));   //path경로설정
-                canvas.drawPath(path, pathPnt); //설정한 path대로 선 그리기
+                canvas.drawPath(path, pathPnt); //설정한 path대로 선 그리기*/
 
                 ball.Draw(canvas);  //메인공그리기
                 if (stageNum >= 5) {    //스테이지 5이상시 추가계산공 1개 그리기
@@ -442,18 +446,34 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }*/
     }
 
+
+    int bgFlag = 0;
     //onDraw외에 지속적으로 쓰레드의 구동과 함께 실행되어야 할 메소드들 포함
     public void Update() {
         //뒷 배경이미지 이동, 두장을 이어붙여 연속성 표현
-        BG.SetPosition(BG.getX() + (float)(BG.getG_wid() * 0.007), BG.getY());
-        if (BG.getX() >= tWidth) {
+        BG.SetPosition(BG.getX() - (float)(tWidth * 0.003), BG.getY());
+        BG2.SetPosition(BG2.getX() - (float)(tWidth * 0.003), BG2.getY());
+
+        if (BG.getX() <= 0 && bgFlag == 0) {
+            BG2.SetPosition((int) tWidth - 10, BG2.getY());
+            bgFlag = 1;
+        }
+        if (BG2.getX() <= 0 && bgFlag == 1) {
+            BG.SetPosition((int) tWidth - 10, BG.getY());
+            bgFlag = 0;
+        }
+
+
+
+
+        /*if (BG.getX() >= tWidth) {
             BG.SetPosition(BG.getX() - (int) tWidth * 2, BG.getY());
         }
         if (BG.getX() >= 0) {
             BG2.SetPosition((int) (tWidth - BG.getX()), BG2.getY());
         } else {
             BG2.SetPosition(-((int) (tWidth + BG.getX())), BG2.getY());
-        }
+        }*/
         //공이 굴러가는 애니메이션 표현을 위해 현재 게임시간을 넘김
         gameTime = System.currentTimeMillis();
         ball.Update(gameTime);
