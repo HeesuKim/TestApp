@@ -25,7 +25,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GraphicObject GO, BG, BG2, Num, Num2;                   //숫자, 배경 관련 이미지
     private GraphicObject [] caNum = new GraphicObject[3];          //계산숫자 이미지
     private SpriteAnimation ball;                                   //메인 공
-    private SpriteAnimation [] caBall = new SpriteAnimation [2];    //난이도에 따라 추가되는 공
+    private GraphicObject leg;
+    private GraphicObject [] caEgg = new GraphicObject [3];         //알
+    private GraphicObject [] ansNum = new GraphicObject[2];         //선택지 숫자
 
     private calStage CS = new calStage();
     Random randNum = new Random();
@@ -116,7 +118,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         stFlag = 0;                 //게임상태 플래그 (0 : stage설명상태, 1 : 게임중상태)
         waveCounter = 0;
 
-        //INFO(Num : 기존계산수, Num2 : 메인공 위에 표시될 수)
+        //INFO(Num : 기존계산수(새에 표시), Num2 : 메인EGG 위에 표시될 수)
         Num = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.num_0),
                 (int) (tWidth * 1/13), (int) (tHeight * 5/10));
         Num2 = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.num_0),
@@ -131,23 +133,26 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         BG2.aboutBG((int) tWidth, (int) tHeight);
         //BG.SetPosition((int) (BG.getG_wid() + tWidth), ((int)(tHeight - BG.getG_hei()))/2);
 
-
-        //BALL(메인 공)
+        //BIRD & LEG
         ball = new SpriteAnimation(AppManager.getInstance().getBitmap(R.drawable.ball_ani));
-        ball.InitSpriteData((int) ball.getG_wid(), (int) ball.getG_hei(), 80, 8);
+        ball.InitSpriteData((int) ball.getG_wid(), (int) ball.getG_hei(), 50, 8);
         ball.SetPosition((int) (tWidth * 1/6), (int) (tHeight * 1/4) - (int) (ball.getG_hei()*1/3));
+        leg = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.leg), 0, 0);
 
-        //BALLS & INFOS (추가되는 공들과 그 공들 위에 표시될 수)
-        for (int i = 0; i < 2; i++) {
-            caBall[i] = new SpriteAnimation(AppManager.getInstance().getBitmap(R.drawable.ball_ani));
-            caBall[i].InitSpriteData((int) ball.getG_wid(), (int) ball.getG_hei(), 60, 6);
+
+        //EGG & INFOS (추가되는 공들과 그 공들 위에 표시될 수)
+        for (int i = 0; i < 3; i++) {
+            caEgg[i] = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.egg), 0, 0);
+
+            /*caEgg[i] = new SpriteAnimation(AppManager.getInstance().getBitmap(R.drawable.ball_ani));
+            caEgg[i].InitSpriteData((int) ball.getG_wid(), (int) ball.getG_hei(), 60, 6);*/
             caNum[i] = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.num_0), 0, 0);
         }
         //추가 공들의 위치는 메인공의 왼쪽과 오른쪽
-        caBall[0].SetPosition((int) (ball.getX() - ball.getG_wid()/6),
-                (int) (ball.getY() - ball.getG_hei()));
-        caBall[1].SetPosition((int) (ball.getX() + ball.getG_wid()/6),
-                (int) (ball.getY() - ball.getG_hei()/2));
+        caEgg[1].SetPosition((int) (caEgg[0].getX() - caEgg[0].getG_wid()),
+                (int) (caEgg[0].getY()));
+        caEgg[2].SetPosition((int) (caEgg[0].getX() + caEgg[0].getG_wid()),
+                (int) (caEgg[0].getY()));
 
         //EARTH (1~4 : 오른쪽에서 다가오는 땅, 5 : 선택되어 공의 받침이 될 땅)
         GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.earth_base),
@@ -164,9 +169,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         gObject[4] = GO;
 
         //EARTH HIGHTLIGHT (선택된 땅을 표시하기 위한 노란색 커버)
-        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.earth_sel),
+        GO = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.earth_sele),
                 (int) (tWidth * 5/6), (int) (tHeight * 3/4));
         gObject[6] = GO;
+
+        //둥지에 표시될 선택지 숫자
+        ansNum[0] = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.num_0), 0, 0);
+        ansNum[1] = new GraphicObject(AppManager.getInstance().getBitmap(R.drawable.num_0), 0, 0);
 
         //calStage에서 계산결과배열을 받아 게임뷰의 각 요소들에 복사
         ansArr = CS.selStage(stageNum, curNum);
@@ -176,14 +185,22 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             calcNum[i] = ansArr[i+1];
         }
 
-        int startRan = mkRan(1, 2);         //위 아래를 랜덤으로 선택하여 답 위치 결정
+        int startRan = mkRan(0, 1);
+        ansNum[startRan].setNum(preNum);
+        ansPos = startRan + 1;
+        if (startRan == 0) {
+            ansNum[1].setNum((preNum + 1)%10);
+        } else {
+            ansNum[0].setNum(Math.abs(preNum - 1));
+        }
+        /*int startRan = mkRan(1, 2);         //위 아래를 랜덤으로 선택하여 답 위치 결정
         gObject[startRan].setBit(preNum);   //답 위치의 땅에 숫자 그리기
         ansPos = startRan;
         if (startRan == 1) {                //답 위치의 반대 땅에 답과 1 차이나는 숫자 그리기
             gObject[2].setBit((preNum + 1)%10);
         } else {
             gObject[1].setBit(Math.abs(preNum - 1));
-        }
+        }*/
 
         //스테이지 설명 관련 paint설정
         pnt = new Paint();
@@ -192,13 +209,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         pnt.setColor(Color.WHITE);
         pnt.setTextSize(50);
 
-        //기존수와 메인공 잇는 선 관련 paint설정
+       /* //기존수와 메인공 잇는 선 관련 paint설정
         path = new Path();
         pathPnt = new Paint();
         pathPnt.setAntiAlias(true);
         pathPnt.setStrokeWidth(20);
         pathPnt.setColor(Color.WHITE);
-        pathPnt.setStyle(Paint.Style.STROKE);
+        pathPnt.setStyle(Paint.Style.STROKE);*/
     }
 
     //일시정지 요청
@@ -233,9 +250,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public int moveBall(int curPos) {
         if (curPos == 1) {
             if (ball.getY() + (float)(tHeight * 0.02)
-                    >= (int) (tHeight * 3/4) - (int) (ball.getG_hei()*1/3)) {
+                    >= (int) (tHeight * 3/5) - (int) (ball.getG_hei()*1/3)) {
                 ball.SetPosition(
-                        ball.getX(), (int) (tHeight * 3/4) - (int) (ball.getG_hei()*1/3));
+                        ball.getX(), (int) (tHeight * 3/5) - (int) (ball.getG_hei()*1/3));
                 ballPos = 2;
                 return 1;
             } else {
@@ -311,17 +328,29 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                         (float) (ball.getY() + (ball.getG_hei()/2)));   //path경로설정
                 canvas.drawPath(path, pathPnt); //설정한 path대로 선 그리기*/
 
-                ball.Draw(canvas);  //메인공그리기
+                ball.Draw(canvas);  //새 그리기
+                leg.SetPosition((float) (ball.getX() + (((ball.getG_wid()/8) - leg.getG_wid())/2)),
+                        (float) (ball.getY() + ball.getG_hei() - 5));   //발 위치 조정
+                /*System.out.println("TSMBIRD : " + ball.getG_wid()/8 + " LEG : " + leg.getG_wid());*/
+
+                // 알 그리기
+                caEgg[0].SetPosition(
+                        (float) (ball.getX() + ((ball.getG_wid()/8 - caEgg[0].getG_wid())/2)),
+                        (float) (leg.getY() + leg.getG_hei() - 5));
+                caEgg[0].Draw(canvas);
                 if (stageNum >= 5) {    //스테이지 5이상시 추가계산공 1개 그리기
-                    caBall[0].SetPosition((int) (ball.getX() - ball.getG_wid()/6),
-                            (int) (ball.getY() - ball.getG_hei()/2));
-                    caBall[0].Draw(canvas);
+                    caEgg[1].SetPosition((int) (caEgg[0].getX() - caEgg[0].getG_wid()),
+                            (int) (caEgg[0].getY()));
+                    caEgg[1].Draw(canvas);
                 }
                 if (stageNum >= 7) {    //스테이지 7이상시 추가계산공 2개 그리기
-                    caBall[1].SetPosition((int) (ball.getX() + ball.getG_wid()/6),
-                            (int) (ball.getY() - ball.getG_hei()/3));
-                    caBall[1].Draw(canvas);
+                    caEgg[2].SetPosition((int) (caEgg[0].getX() + caEgg[0].getG_wid()),
+                            (int) (caEgg[0].getY()));
+                    caEgg[2].Draw(canvas);
                 }
+
+                //발 그리기
+                leg.Draw(canvas);
 
                 //땅 그리기
                 for (int i = 1; i < 10; i++) {
@@ -330,6 +359,16 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                         vObj.Draw(canvas);
                     }
                 }
+
+                //선택할 둥지 숫자 그리기
+                ansNum[0].SetPosition(
+                        gObject[1].getX() + (float) (gObject[1].getG_wid()/2 - ansNum[0].getG_wid()/2),
+                        gObject[1].getY());
+                ansNum[0].Draw(canvas);
+                ansNum[1].SetPosition(
+                        gObject[2].getX() + (float) (gObject[2].getG_wid()/2 - ansNum[1].getG_wid()/2),
+                        gObject[2].getY());
+                ansNum[1].Draw(canvas);
 
                 //땅 이동, 시간제한 관련 타이머 부분
                 if (tEndFlag == 0) {    //타이머 시작(기존 타이머가 0이 되었거나 새로 시작할 때)
@@ -352,8 +391,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                             if (ballPos != stPos) { //공의 현재위치가 답의 위치와 다를 때 공 이동설정
                                 moveBallF = 1;
                             }
-                            gObject[5] = gObject[stPos];    //5번 땅에 선택된 땅 복사
-                            gObject[5].setBit(10);          //5번 땅의 숫자표시를 삭제
+                            /*gObject[5] = gObject[stPos];    //5번 땅에 선택된 땅 복사
+                            gObject[5].setBit(10);          //5번 땅의 숫자표시를 삭제*/
                             gObject[1] = gObject[3];        //뒤에 있던 땅 정보들 앞 땅으로 복사
                             gObject[2] = gObject[4];
 
@@ -383,14 +422,24 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                                 calcNum[i] = ansArr[i+1];
                             }
 
-                            int selRan = mkRan(1, 2);
+
+                            int selRan = mkRan(0, 1);
+                            ansNum[selRan].setNum(preNum);
+                            ansPos = selRan;
+                            if (selRan == 0) {
+                                ansNum[1].setNum((preNum + 1)%10);
+                            } else {
+                                ansNum[0].setNum(Math.abs(preNum - 1));
+                            }
+
+                            /*int selRan = mkRan(1, 2);
                             gObject[selRan].setBit(preNum);
                             if (selRan == 1) {
                                 gObject[2].setBit((preNum + 1)%10);
                             } else {
                                 gObject[1].setBit(Math.abs(preNum - 1));
-                            }
-                            ansPos = selRan;    //답의 위치를 정함
+                            }*/
+                            ansPos = selRan + 1;    //답의 위치를 정함
                         } else { //오답시 스테이지 1부터 재시작
                             stageNum = 1;
                             canvas.drawColor(Color.BLACK);
@@ -399,21 +448,35 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                     }
                 }
                 Num.setNum(curNum);     //기존 수 이미지 업데이트 후 그리기
+                //새의 위치정보를 받아와 그 위에 그림
+                Num.SetPosition((float) (ball.getX() + ((ball.getG_wid()/16 - Num.getG_wid()*4/9))),
+                        (float) (ball.getY() + (ball.getG_hei()/2 - Num.getG_hei()/5)));
                 Num.Draw(canvas);
 
-                Num2.setNum(calNum);    //메인공에 표시될 계산 수 이미지 업데이트 후 그리기
+                /*Num2.setNum(calNum);    //메인공에 표시될 계산 수 이미지 업데이트 후 그리기
                 Num2.SetPosition(ball.getX(), ball.getY()); //공의 위치정보를 받아와 그 위에 그림
-                Num2.Draw(canvas);
+                Num2.Draw(canvas);*/
+
+                //알 위에 표시될 숫자 그리기
+                caNum[0].setNum(calNum);
+                caNum[0].SetPosition(
+                        (float) (caEgg[0].getX() + (caEgg[0].getG_wid()/2 - caNum[0].getG_wid()*6/13)),
+                        (float) (caEgg[0].getY() + (caEgg[0].getG_hei()/2 - caNum[0].getG_hei()/2)));
+                caNum[0].Draw(canvas);
 
                 if (stageNum >= 5) {    //5스테이지 이상부터 추가 공 위에 표시될 숫자
-                    caNum[0].setNum(calcNum[1]);
-                    caNum[0].SetPosition(caBall[0].getX(), caBall[0].getY());
-                    caNum[0].Draw(canvas);
+                    caNum[1].setNum(calcNum[1]);
+                    caNum[1].SetPosition(
+                            (float) (caEgg[1].getX() + (caEgg[1].getG_wid()/2 - caNum[1].getG_wid()*6/13)),
+                            (float) (caEgg[1].getY() + (caEgg[1].getG_hei()/2 - caNum[1].getG_hei()/2)));
+                    caNum[1].Draw(canvas);
                 }
                 if (stageNum >= 7) {    //7스테이지 이상부터 추가 공 위에 표시될 숫자
-                    caNum[1].setNum(calcNum[2]);
-                    caNum[1].SetPosition(caBall[1].getX(), caBall[1].getY());
-                    caNum[1].Draw(canvas);
+                    caNum[2].setNum(calcNum[2]);
+                    caNum[2].SetPosition(
+                            (float) (caEgg[2].getX() + (caEgg[2].getG_wid()/2 - caNum[2].getG_wid()*6/13)),
+                            (float) (caEgg[2].getY() + (caEgg[2].getG_hei()/2 - caNum[2].getG_hei()/2)));
+                    caNum[2].Draw(canvas);
                 }
             }
         }
@@ -451,8 +514,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     //onDraw외에 지속적으로 쓰레드의 구동과 함께 실행되어야 할 메소드들 포함
     public void Update() {
         //뒷 배경이미지 이동, 두장을 이어붙여 연속성 표현
-        BG.SetPosition(BG.getX() - (float)(tWidth * 0.003), BG.getY());
-        BG2.SetPosition(BG2.getX() - (float)(tWidth * 0.003), BG2.getY());
+        BG.SetPosition(BG.getX() - (float)(tWidth * 0.001), BG.getY());
+        BG2.SetPosition(BG2.getX() - (float)(tWidth * 0.001), BG2.getY());
 
         if (BG.getX() <= 0 && bgFlag == 0) {
             BG2.SetPosition((int) tWidth - 10, BG2.getY());
@@ -477,8 +540,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         //공이 굴러가는 애니메이션 표현을 위해 현재 게임시간을 넘김
         gameTime = System.currentTimeMillis();
         ball.Update(gameTime);
-        caBall[0].Update(gameTime);
-        caBall[1].Update(gameTime);
+        /*caEgg[0].Update(gameTime);
+        caEgg[1].Update(gameTime);*/
 
         if (moveBallF == 1) {   //공이 움직여야 하는 상태
            if (moveBall(ballPos) == 1) {    //공을 움직임이 완료되면
